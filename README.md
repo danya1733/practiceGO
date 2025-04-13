@@ -80,6 +80,8 @@
 
 Документация API доступна через Swagger UI по адресу: http://localhost:8080/swagger/
 
+> **Примечание**: В проекте используется новая система маршрутизации Go 1.24 с определением HTTP-метода в шаблоне пути, но все примеры запросов ниже совместимы с данной реализацией.
+
 ### Основные эндпоинты
 
 #### Склады
@@ -95,7 +97,7 @@
 - `POST /api/inventory` - создать запись инвентаризации (добавить товар на склад)
 - `PUT /api/inventory/quantity` - обновить количество товара на складе
 - `PUT /api/inventory/discount` - обновить скидку на товар
-- `GET /api/warehouses/{id}/products` - получить список товаров на складе
+- `GET /api/warehouses/{id}/products` - получить список товаров на складе (поддерживает параметры пагинации `page` и `limit`)
 - `GET /api/warehouses/{warehouse_id}/products/{product_id}` - получить информацию о товаре на складе
 
 #### Покупки
@@ -104,7 +106,7 @@
 
 #### Аналитика
 - `GET /api/analytics/warehouses/{id}` - получить аналитику по складу
-- `GET /api/analytics/warehouses/top` - получить топ складов по выручке
+- `GET /api/analytics/warehouses/top` - получить топ складов по выручке (поддерживает параметр `limit`)
 
 ## Примеры запросов
 
@@ -114,6 +116,14 @@
 curl -X POST http://localhost:8080/api/warehouses \
   -H "Content-Type: application/json" \
   -d '{"address": "ул. Складская, 123"}'
+```
+
+Пример ответа:
+```json
+{
+  "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "address": "ул. Складская, 123"
+}
 ```
 
 ### Создание товара
@@ -130,18 +140,129 @@ curl -X POST http://localhost:8080/api/products \
   }'
 ```
 
+Пример ответа:
+```json
+{
+  "id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+  "name": "Ноутбук",
+  "description": "Ноутбук Dell XPS 13",
+  "characteristics": {"processor": "Intel i7", "ram": "16GB", "storage": "512GB SSD"},
+  "weight": 1.3,
+  "barcode": "1234567890123"
+}
+```
+
 ### Добавление товара на склад
 
 ```bash
 curl -X POST http://localhost:8080/api/inventory \
   -H "Content-Type: application/json" \
   -d '{
-    "warehouse_id": "полученный_uuid_склада",
-    "product_id": "полученный_uuid_товара",
+    "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
     "quantity": 10,
     "price": 75000,
     "discount": 5
   }'
+```
+
+Пример ответа:
+```json
+{
+  "id": "8f3d8e9c-24ac-4a6e-9d3f-1a2b3c4d5e6f",
+  "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+  "quantity": 10,
+  "price": 75000,
+  "discount": 5
+}
+```
+
+### Обновление количества товара на складе
+
+```bash
+curl -X PUT http://localhost:8080/api/inventory/quantity \
+  -H "Content-Type: application/json" \
+  -d '{
+    "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+    "quantity": 15
+  }'
+```
+
+Пример ответа:
+```json
+{
+  "id": "8f3d8e9c-24ac-4a6e-9d3f-1a2b3c4d5e6f",
+  "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+  "quantity": 15,
+  "price": 75000,
+  "discount": 5
+}
+```
+
+### Обновление скидки на товар
+
+```bash
+curl -X PUT http://localhost:8080/api/inventory/discount \
+  -H "Content-Type: application/json" \
+  -d '{
+    "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+    "discount": 10
+  }'
+```
+
+Пример ответа:
+```json
+{
+  "id": "8f3d8e9c-24ac-4a6e-9d3f-1a2b3c4d5e6f",
+  "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+  "quantity": 15,
+  "price": 75000,
+  "discount": 10
+}
+```
+
+### Получение списка товаров на складе
+
+```bash
+curl -X GET "http://localhost:8080/api/warehouses/f47ac10b-58cc-4372-a567-0e02b2c3d479/products?page=1&limit=10"
+```
+
+### Расчет стоимости покупки
+
+```bash
+curl -X POST http://localhost:8080/api/warehouses/calculate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "products": [
+      {
+        "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+        "quantity": 2
+      }
+    ]
+  }'
+```
+
+Пример ответа:
+```json
+{
+  "total_sum": 135000,
+  "items": [
+    {
+      "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+      "name": "Ноутбук",
+      "quantity": 2,
+      "price": 75000,
+      "price_with_discount": 67500,
+      "total_price": 135000
+    }
+  ]
+}
 ```
 
 ### Покупка товаров
@@ -150,14 +271,49 @@ curl -X POST http://localhost:8080/api/inventory \
 curl -X POST http://localhost:8080/api/warehouses/purchase \
   -H "Content-Type: application/json" \
   -d '{
-    "warehouse_id": "полученный_uuid_склада",
+    "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "products": [
       {
-        "product_id": "полученный_uuid_товара",
+        "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
         "quantity": 1
       }
     ]
   }'
+```
+
+Пример ответа:
+```json
+{
+  "status": "success"
+}
+```
+
+### Получение аналитики по складу
+
+```bash
+curl -X GET http://localhost:8080/api/analytics/warehouses/f47ac10b-58cc-4372-a567-0e02b2c3d479
+```
+
+Пример ответа:
+```json
+{
+  "total_sum": 67500,
+  "analytics": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+      "warehouse_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "product_id": "3a7acb1d-23ec-4281-b692-3f35ba0c1421",
+      "sold_quantity": 1,
+      "total_sum": 67500
+    }
+  ]
+}
+```
+
+### Получение топ складов по выручке
+
+```bash
+curl -X GET "http://localhost:8080/api/analytics/warehouses/top?limit=5"
 ```
 
 ## Структура базы данных
@@ -198,6 +354,10 @@ project/
 ├── cmd/
 │   └── app/
 │       └── main.go          # Точка входа в приложение
+├── docs/
+│   └── swagger/            # Документация Swagger
+│       ├── index.html      # Интерфейс Swagger UI
+│       └── swagger.json    # Спецификация API в формате JSON
 ├── internal/
 │   ├── app/
 │   │   └── app.go           # Инициализация приложения
@@ -225,10 +385,6 @@ project/
 └── go.sum                   # Хеши зависимостей
 ```
 
-### Миграции
+### Логирование
 
 Для логирования используется библиотека [zap](https://github.com/uber-go/zap). Все HTTP запросы автоматически логируются с уникальным идентификатором запроса.
-
-## Лицензия
-
-MIT
