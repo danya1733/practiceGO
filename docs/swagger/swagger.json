@@ -1007,6 +1007,7 @@
     },
     "WarehouseCreate": {
       "type": "object",
+      "required": ["address"],
       "properties": {
         "address": {
           "type": "string",
@@ -1016,6 +1017,7 @@
     },
     "ProductCreate": {
       "type": "object",
+      "required": ["name"],
       "properties": {
         "name": {
           "type": "string",
@@ -1046,6 +1048,7 @@
     },
     "InventoryCreate": {
       "type": "object",
+      "required": ["warehouse_id", "product_id", "quantity", "price"],
       "properties": {
         "warehouse_id": {
           "type": "string", 
@@ -1069,7 +1072,8 @@
         "discount": {
           "type": "number",
           "format": "float",
-          "example": 5
+          "example": 5,
+          "default": 0
         }
       }
     }
