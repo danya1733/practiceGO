@@ -1,0 +1,23 @@
+# Сборочные артефакты Go
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Кэш модуля
+
+
+# Для IDE (GoLand, VSCode и прочие)
+.vscode/
+*.swp
+
+# Docker
+docker-data/
+docker-compose.override.yml
+
+# .env файлы (если не хотим заливать реальные креды в репозиторий)
+.env
