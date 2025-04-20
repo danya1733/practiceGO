@@ -6,13 +6,7 @@
 // Host: localhost:8080
 // BasePath: /api
 // Version: 1.0.0
-//
-// Consumes:
-// - application/json
-//
-// Produces:
-// - application/json
-//
+
 // swagger:meta
 package main
 
@@ -33,9 +27,6 @@ import (
 // @title Warehouse Management System API
 // @version 1.0
 // @description API для системы управления складами, товарами и инвентаризацией с аналитикой продаж
-
-// @contact.name API Support
-// @contact.email support@example.com
 
 // @host localhost:8080
 // @BasePath /api

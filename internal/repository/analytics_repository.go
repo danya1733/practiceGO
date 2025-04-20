@@ -22,7 +22,7 @@ func NewAnalyticsRepository(pool *pgxpool.Pool) *AnalyticsRepository {
 func (r *AnalyticsRepository) GetWarehouseAnalytics(ctx context.Context, warehouseID uuid.UUID) ([]domain.Analytics, float64, error) {
 	query := `
 		SELECT a.id, a.warehouse_id, a.product_id, a.sold_quantity, a.total_sum,
-			   SUM(a.total_sum) OVER() as total_sum
+			SUM(a.total_sum) OVER() as total_sum
 		FROM analytics a
 		WHERE a.warehouse_id = $1
 		ORDER BY a.total_sum DESC
